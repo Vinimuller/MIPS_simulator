@@ -10,7 +10,9 @@ instructionMem = []
 fillValues = {}
 labelValues = {}
 programCounter = 0
+PC = 0
 register = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+
 
 class instructionStruct:
     def __init__(self,OpCode, Op1, Op2, Op3, Temp1, Temp2, Temp3):
@@ -36,7 +38,6 @@ def readFile():
         # print(line.split(" ")[0])
         if(".fill" in line):
             fillValues[line.split(" ")[0]] = int(line.split(" ")[2])
-            fillValues["neg1"] = -1;
         elif(line.split(" ")[0].strip() in supportedIntructions):
             instructionMem.append(line.rstrip('\n'))
         else:
@@ -77,20 +78,17 @@ def add():
     ID_EX.Temp1 = register[int(ID_EX.Op1)] + register[int(ID_EX.Op2)]
 
 def beq():
-    # se for igual
-    #PC = valor
-
-
-    ID_EX.Temp1 = register[int(ID_EX.Op1)] + register[int(ID_EX.Op2)]
+    if(register[int(EX_MEM.Op1)] == register[int(EX_MEM.Op2)]):
+        globals()["programCounter"] = labelValues[EX_MEM.Op3]
+        
 
 def executeStage3():
     print("Stage 3: " + str(ID_EX.OpCode) + " " + str(ID_EX.Op1) + " " + str(ID_EX.Op2) + " " + str(ID_EX.Op3))
+    
     if(ID_EX.OpCode == "addi"):
         addi()
     if(ID_EX.OpCode == "add"):
         add()
-    if(ID_EX.OpCode == "beq"):
-        beq()
 
     EX_MEM.OpCode = ID_EX.OpCode
     EX_MEM.Op1 = ID_EX.Op1
@@ -101,6 +99,10 @@ def executeStage3():
 
 def executeStage4():
     print("Stage 4: " + str(EX_MEM.OpCode) + " " + str(EX_MEM.Op1) + " " + str(EX_MEM.Op2) + " " + str(EX_MEM.Op3))
+    
+    if(EX_MEM.OpCode == "beq"):
+        beq()
+
     MEM_WB.OpCode = EX_MEM.OpCode
     MEM_WB.Op1 = EX_MEM.Op1
     MEM_WB.Op2 = EX_MEM.Op2
@@ -119,6 +121,7 @@ readFile()
 
 print("LOOP PRINCIPAL")
 while(True):
+    input()
     print("-------")
     print("PC: " + str(programCounter) + " | r0-r31: " + str(register))
     if(MEM_WB.OpCode != ""):
